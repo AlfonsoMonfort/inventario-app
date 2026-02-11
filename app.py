@@ -163,7 +163,7 @@ document.addEventListener("DOMContentLoaded", function() {
             readers : ["ean_reader"],
             multiple: false
         },
-        numOfWorkers: navigator.hardwareConcurrency || 4
+        numOfWorkers: navigator.hardwareConcurrency || 4,
         locate: true
     }, function(err) {
         if (!err) {
