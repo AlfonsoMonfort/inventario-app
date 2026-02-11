@@ -214,7 +214,14 @@ def excel():
 
     wb.save(filename)
 
+    # 🔥 RESET DEL INVENTARIO
+    inventario["fecha"] = ""
+    inventario["almacen"] = ""
+    inventario["vendedor"] = ""
+    inventario["articulos"] = {}
+
     return send_file(filename, as_attachment=True)
+
 
 
 
