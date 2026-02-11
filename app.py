@@ -20,6 +20,7 @@ HTML = """
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
 </head>
+
 <body style="font-family: Arial; padding: 20px;">
 
 <h2>Inicio Inventario</h2>
@@ -64,6 +65,12 @@ Cantidad:<br>
 </a>
 
 <script>
+
+// Variables de control
+let ultimoCodigo = "";
+let ultimoTiempo = 0;
+let escaneoBloqueado = false;
+
 Quagga.init({
     inputStream : {
         name : "Live",
@@ -73,9 +80,14 @@ Quagga.init({
             facingMode: "environment"
         }
     },
+    locator: {
+        patchSize: "medium",
+        halfSample: true
+    },
     decoder : {
-        readers : ["ean_reader","ean_8_reader","code_128_reader"]
-    }
+        readers : ["ean_reader"]  // Solo EAN13 para evitar basura
+    },
+    locate: true
 }, function(err) {
     if (!err) {
         Quagga.start();
@@ -83,18 +95,44 @@ Quagga.init({
 });
 
 Quagga.onDetected(function(result) {
+
+    if (escaneoBloqueado) return;
+
     let code = result.codeResult.code;
+    let ahora = Date.now();
+
+    // Solo aceptar códigos de 13 dígitos numéricos
+    if (!/^\d{13}$/.test(code)) {
+        return;
+    }
+
+    // Evitar duplicado en menos de 1.5 segundos
+    if (code === ultimoCodigo && (ahora - ultimoTiempo) < 1500) {
+        return;
+    }
+
+    ultimoCodigo = code;
+    ultimoTiempo = ahora;
+    escaneoBloqueado = true;
+
     document.getElementById("codigoInput").value = code;
     document.getElementById("cantidadInput").value =
         document.getElementById("cantidad").value;
 
     document.getElementById("scanForm").submit();
+
+    // Desbloquear tras 1 segundo
+    setTimeout(function() {
+        escaneoBloqueado = false;
+    }, 1000);
 });
+
 </script>
 
 </body>
 </html>
 """
+
 
 @app.route("/")
 def home():
@@ -127,18 +165,29 @@ def excel():
     wb = Workbook()
     ws = wb.active
 
-    ws.append(["Fecha", inventario["fecha"]])
-    ws.append(["Almacén", inventario["almacen"]])
-    ws.append(["Vendedor", inventario["vendedor"]])
-    ws.append([])
-    ws.append(["Código", "Cantidad"])
+    # Datos fijos arriba
+    ws["A1"] = "Fecha"
+    ws["B1"] = inventario["fecha"]
 
-    for codigo, cant in inventario["articulos"].items():
-        ws.append([codigo, cant])
+    ws["A2"] = "Almacén"
+    ws["B2"] = inventario["almacen"]
+
+    ws["A5"] = "Vendedor"
+    ws["B5"] = inventario["vendedor"]
+
+    # Cabecera tabla
+    ws["A7"] = "Referencia"
+    ws["B7"] = "Cantidad"
+
+    fila = 8
+    for codigo, cantidad in inventario["articulos"].items():
+        ws[f"A{fila}"] = codigo
+        ws[f"B{fila}"] = cantidad
+        fila += 1
 
     wb.save(filename)
-
     return send_file(filename, as_attachment=True)
+
 
 if __name__ == "__main__":
     app.run()
