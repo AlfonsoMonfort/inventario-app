@@ -34,15 +34,10 @@ HTML = """
     <button type="submit">Empezar</button>
 </form>
 
+{% if inventario["fecha"] %}
 <hr>
 
 <h2>Escanear Código</h2>
-
-<button onclick="activarCamara()" style="padding:10px; font-size:16px;">
-    Activar Cámara
-</button>
-
-<p><b>Después toca la imagen para escanear</b></p>
 
 Cantidad:<br>
 <input type="number" id="cantidad" value="1" min="1"><br><br>
@@ -72,12 +67,12 @@ Cantidad:<br>
 
 <script>
 
-let camaraActiva = false;
 let modoDisparo = false;
 
-function activarCamara() {
+// Esperar a que el DOM esté completamente cargado
+document.addEventListener("DOMContentLoaded", function() {
 
-    if (camaraActiva) return;
+    if (!document.getElementById("scanner")) return;
 
     Quagga.init({
         inputStream : {
@@ -94,38 +89,40 @@ function activarCamara() {
     }, function(err) {
         if (!err) {
             Quagga.start();
-            camaraActiva = true;
         }
     });
-}
 
-document.getElementById("scanner").addEventListener("click", function() {
-    if (!camaraActiva) return;
-    modoDisparo = true;
-});
+    document.getElementById("scanner").addEventListener("click", function() {
+        modoDisparo = true;
+    });
 
-Quagga.onDetected(function(result) {
+    Quagga.onDetected(function(result) {
 
-    if (!modoDisparo) return;
+        if (!modoDisparo) return;
 
-    let code = result.codeResult.code;
+        let code = result.codeResult.code;
 
-    if (!/^\d{13}$/.test(code)) return;
+        if (!/^\d{13}$/.test(code)) return;
 
-    modoDisparo = false;
+        modoDisparo = false;
 
-    document.getElementById("codigoInput").value = code;
-    document.getElementById("cantidadInput").value =
-        document.getElementById("cantidad").value;
+        document.getElementById("codigoInput").value = code;
+        document.getElementById("cantidadInput").value =
+            document.getElementById("cantidad").value;
 
-    document.getElementById("scanForm").submit();
+        document.getElementById("scanForm").submit();
+    });
+
 });
 
 </script>
 
+{% endif %}
+
 </body>
 </html>
 """
+
 
 
 
