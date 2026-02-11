@@ -38,10 +38,12 @@ HTML = """
 
 <h2>Escanear Código</h2>
 
+<p><b>Toca la imagen para escanear</b></p>
+
 Cantidad:<br>
 <input type="number" id="cantidad" value="1" min="1"><br><br>
 
-<div id="scanner" style="width:100%; max-width:400px;"></div>
+<div id="scanner" style="width:100%; max-width:400px; border:2px solid #000;"></div>
 
 <form method="POST" action="/agregar" id="scanForm">
     <input type="hidden" name="codigo" id="codigoInput">
@@ -66,11 +68,9 @@ Cantidad:<br>
 
 <script>
 
-// Variables de control
-let ultimoCodigo = "";
-let ultimoTiempo = 0;
-let escaneoBloqueado = false;
+let permitirEscaneo = false;
 
+// Inicializar Quagga
 Quagga.init({
     inputStream : {
         name : "Live",
@@ -80,51 +80,37 @@ Quagga.init({
             facingMode: "environment"
         }
     },
-    locator: {
-        patchSize: "medium",
-        halfSample: true
-    },
     decoder : {
-        readers : ["ean_reader"]  // Solo EAN13 para evitar basura
-    },
-    locate: true
+        readers : ["ean_reader"]
+    }
 }, function(err) {
     if (!err) {
         Quagga.start();
     }
 });
 
+// Cuando el usuario toca la pantalla del scanner
+document.getElementById("scanner").addEventListener("click", function() {
+    permitirEscaneo = true;
+});
+
+// Detectar código
 Quagga.onDetected(function(result) {
 
-    if (escaneoBloqueado) return;
+    if (!permitirEscaneo) return;
 
     let code = result.codeResult.code;
-    let ahora = Date.now();
 
-    // Solo aceptar códigos de 13 dígitos numéricos
-    if (!/^\d{13}$/.test(code)) {
-        return;
-    }
+    // Validar EAN13
+    if (!/^\d{13}$/.test(code)) return;
 
-    // Evitar duplicado en menos de 1.5 segundos
-    if (code === ultimoCodigo && (ahora - ultimoTiempo) < 1500) {
-        return;
-    }
-
-    ultimoCodigo = code;
-    ultimoTiempo = ahora;
-    escaneoBloqueado = true;
+    permitirEscaneo = false; // bloquear hasta siguiente toque
 
     document.getElementById("codigoInput").value = code;
     document.getElementById("cantidadInput").value =
         document.getElementById("cantidad").value;
 
     document.getElementById("scanForm").submit();
-
-    // Desbloquear tras 1 segundo
-    setTimeout(function() {
-        escaneoBloqueado = false;
-    }, 1000);
 });
 
 </script>
@@ -132,6 +118,7 @@ Quagga.onDetected(function(result) {
 </body>
 </html>
 """
+
 
 
 @app.route("/")
@@ -164,18 +151,15 @@ def excel():
     from flask import send_file
     from datetime import datetime
 
-    # Nombre dinámico con timestamp
     filename = f"inventario_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
 
     wb = Workbook()
     ws = wb.active
     ws.title = "Inventario"
 
-    # Cabeceras
     headers = ["fecha", "almacen", "referencia", "cantidad", "numero vendedor"]
     ws.append(headers)
 
-    # Filas
     for codigo, cantidad in inventario["articulos"].items():
         ws.append([
             inventario["fecha"],
@@ -187,7 +171,14 @@ def excel():
 
     wb.save(filename)
 
+    # 🔥 RESET INVENTARIO DESPUÉS DE GENERAR EXCEL
+    inventario["fecha"] = ""
+    inventario["almacen"] = ""
+    inventario["vendedor"] = ""
+    inventario["articulos"] = {}
+
     return send_file(filename, as_attachment=True)
+
 
 
 
