@@ -162,32 +162,33 @@ def agregar():
 def excel():
     from openpyxl import Workbook
     from flask import send_file
+    from datetime import datetime
 
-    filename = "inventario.xlsx"
+    # Nombre dinámico con timestamp
+    filename = f"inventario_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
 
     wb = Workbook()
     ws = wb.active
+    ws.title = "Inventario"
 
     # Cabeceras
-    ws["A1"] = "fecha"
-    ws["B1"] = "almacen"
-    ws["C1"] = "referencia"
-    ws["D1"] = "cantidad"
-    ws["E1"] = "numero_vendedor"
+    headers = ["fecha", "almacen", "referencia", "cantidad", "numero vendedor"]
+    ws.append(headers)
 
-    fila = 2
-
+    # Filas
     for codigo, cantidad in inventario["articulos"].items():
-        ws[f"A{fila}"] = inventario["fecha"]
-        ws[f"B{fila}"] = inventario["almacen"]
-        ws[f"C{fila}"] = codigo
-        ws[f"D{fila}"] = cantidad
-        ws[f"E{fila}"] = inventario["vendedor"]
-        fila += 1
+        ws.append([
+            inventario["fecha"],
+            inventario["almacen"],
+            codigo,
+            cantidad,
+            inventario["vendedor"]
+        ])
 
     wb.save(filename)
 
     return send_file(filename, as_attachment=True)
+
 
 
 
