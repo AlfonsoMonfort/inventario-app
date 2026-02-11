@@ -40,7 +40,7 @@ HTML = """
 
 <body style="font-family: Arial; padding: 20px;">
 
-<h2>Inicio Inventario V.1</h2>
+<h2>Inicio Inventario V.2</h2>
 <form method="POST" action="/inicio">
     Almacén:<br>
     <input type="text" name="almacen" required><br><br>
@@ -96,6 +96,16 @@ Cantidad:<br>
     </button>
 </a>
 
+<!-- SONIDOS --> 
+<!-- Sonido OK (cling suave) --> 
+<audio id="okSound" 
+src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3">
+</audio> 
+
+<!-- Sonido ERROR (beep corto) --> 
+<audio id="errorSound" 
+src="https://www.soundjay.com/buttons/sounds/beep-07.mp3">
+</audio>
 
 <script>
 
@@ -114,6 +124,7 @@ document.addEventListener("DOMContentLoaded", function() {
         mensaje.style.backgroundColor = "#d4edda";
         mensaje.style.color = "#155724";
         mensaje.innerHTML = "✅ Artículo añadido";
+        document.getElementById("okSound").play();
     }
 
     if (estado === "error") {
@@ -121,6 +132,7 @@ document.addEventListener("DOMContentLoaded", function() {
         mensaje.style.backgroundColor = "#f8d7da";
         mensaje.style.color = "#721c24";
         mensaje.innerHTML = "❌ Código no encontrado";
+        document.getElementById("errorSound").play();
     }
 
     if (estado === "ok" || estado === "error") {
