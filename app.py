@@ -74,7 +74,7 @@ HTML = """
 </div>
 
 Cantidad:<br>
-<input type="number" id="cantidad" value="1" min="1"><br><br>
+<input type="number" id="cantidad" value="{{ ultima_cantidad }}" min="1"><br><br>
 
 <div id="scanner" style="
     width: 100%;
@@ -207,7 +207,7 @@ document.addEventListener("DOMContentLoaded", function() {
 def home():
     estado = request.args.get("estado")
     today = datetime.now().strftime("%Y-%m-%d")
-
+    ultima_cantidad = session.get("ultima_cantidad", 1)
     inventario = session.get("inventario", {
         "fecha": "",
         "almacen": "",
@@ -220,7 +220,8 @@ def home():
         inventario=inventario,
         referencia_a_descripcion=referencia_a_descripcion,
         estado=estado,
-        today=today   # 👈 ESTO FALTABA
+        today=today,
+        ultima_cantidad=ultima_cantidad   # 👈 añadimos esto
     )
 
 
@@ -247,15 +248,19 @@ def agregar():
 
     referencia = codigo_a_referencia.get(codigo)
 
+    # 🔴 Si NO encuentra referencia
     if not referencia:
+        session["ultima_cantidad"] = cantidad  # 👈 guardamos cantidad
         return redirect(url_for("home", estado="error"))
 
+    # ✅ Si encuentra referencia
     if referencia in inventario["articulos"]:
         inventario["articulos"][referencia] += cantidad
     else:
         inventario["articulos"][referencia] = cantidad
 
     session["inventario"] = inventario
+    session["ultima_cantidad"] = cantidad  # 👈 también la guardamos aquí
 
     return redirect(url_for("home", estado="ok"))
 
