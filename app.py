@@ -96,9 +96,6 @@ Cantidad:<br>
     </button>
 </a>
 
-<!-- SONIDOS -->
-<!-- <audio id="okSound" src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3"></audio> -->
-<!-- <audio id="errorSound" src="https://www.soundjay.com/buttons/sounds/beep-07.mp3"></audio> -->
 
 <script>
 
