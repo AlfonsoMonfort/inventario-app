@@ -44,7 +44,7 @@ HTML = """
 
 <body style="font-family: Arial; padding: 20px;">
 
-<h2>Inicio Inventario V.5</h2>
+<h2>Inicio Inventario V.4</h2>
 <form method="POST" action="/inicio">
 
     Fecha:<br>
@@ -62,7 +62,7 @@ HTML = """
 {% if inventario["fecha"] %}
 <hr>
 
-<h2>Escanear Código</h2>
+<h2>Escanear Código (toca la imagen para escanear)</h2>
 
 <div id="mensajeEstado" style="
     display:none;
@@ -78,7 +78,7 @@ Cantidad:<br>
 
 <div id="scanner" style="
     width: 100%;
-    height: 240px;
+    height: 260px;
     margin: 20px auto;
     border: 3px solid black;
     border-radius: 10px;
@@ -115,13 +115,10 @@ Cantidad:<br>
 
 <script>
 
-let modoDisparo = false;
+let permitirEscaneo = false;
 
 document.addEventListener("DOMContentLoaded", function() {
 
-    // ------------------------
-    // MENSAJE OK / ERROR
-    // ------------------------
     let estado = "{{ estado }}";
     let mensaje = document.getElementById("mensajeEstado");
 
@@ -130,10 +127,7 @@ document.addEventListener("DOMContentLoaded", function() {
         mensaje.style.backgroundColor = "#d4edda";
         mensaje.style.color = "#155724";
         mensaje.innerHTML = "✅ Artículo añadido";
-
-        let okAudio = document.getElementById("okSound");
-        okAudio.volume = 0.3;
-        okAudio.play();
+        document.getElementById("okSound").play();
     }
 
     if (estado === "error") {
@@ -141,10 +135,7 @@ document.addEventListener("DOMContentLoaded", function() {
         mensaje.style.backgroundColor = "#f8d7da";
         mensaje.style.color = "#721c24";
         mensaje.innerHTML = "❌ Código no encontrado";
-
-        let errorAudio = document.getElementById("errorSound");
-        errorAudio.volume = 0.3;
-        errorAudio.play();
+        document.getElementById("errorSound").play();
     }
 
     if (estado === "ok" || estado === "error") {
@@ -153,10 +144,6 @@ document.addEventListener("DOMContentLoaded", function() {
             window.history.replaceState({}, document.title, "/");
         }, 1000);
     }
-
-    // ------------------------
-    // QUAGGA
-    // ------------------------
 
     const scannerElement = document.getElementById("scanner");
     if (!scannerElement) return;
@@ -168,12 +155,6 @@ document.addEventListener("DOMContentLoaded", function() {
             target: scannerElement,
             constraints: {
                 facingMode: "environment"
-            },
-            area: {
-                top: "30%",
-                right: "0%",
-                left: "0%",
-                bottom: "30%"
             }
         },
         decoder : {
@@ -186,20 +167,20 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 
-    // Activar disparo solo al tocar
+    // Solo permitir un escaneo cuando se toca la imagen
     scannerElement.addEventListener("click", function() {
-        modoDisparo = true;
+        permitirEscaneo = true;
     });
 
     Quagga.onDetected(function(result) {
 
-        if (!modoDisparo) return;
+        if (!permitirEscaneo) return;
 
         let code = result.codeResult.code;
 
         if (!/^\d{13}$/.test(code)) return;
 
-        modoDisparo = false;
+        permitirEscaneo = false; // 🔥 evita múltiples lecturas
 
         document.getElementById("codigoInput").value = code;
         document.getElementById("cantidadInput").value =
@@ -217,6 +198,7 @@ document.addEventListener("DOMContentLoaded", function() {
 </body>
 </html>
 """
+
 
 
 
