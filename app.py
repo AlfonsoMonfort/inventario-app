@@ -64,7 +64,6 @@ HTML = """
 
 <h2>Escanear Código</h2>
 
-<!-- MENSAJE VISUAL -->
 <div id="mensajeEstado" style="
     display:none;
     padding:12px;
@@ -79,8 +78,7 @@ Cantidad:<br>
 
 <div id="scanner" style="
     width: 100%;
-    max-width: 100%;
-    height: 100px;
+    height: 110px;
     margin: 20px auto;
     border: 3px solid black;
     border-radius: 10px;
@@ -112,7 +110,6 @@ Cantidad:<br>
     </button>
 </a>
 
-<!-- SONIDOS -->
 <audio id="okSound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg"></audio>
 <audio id="errorSound" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
 
@@ -161,28 +158,45 @@ document.addEventListener("DOMContentLoaded", function() {
     // QUAGGA
     // ------------------------
 
-    if (!document.getElementById("scanner")) return;
+    const scannerElement = document.getElementById("scanner");
+    if (!scannerElement) return;
 
     Quagga.init({
         inputStream : {
             name : "Live",
             type : "LiveStream",
-            target: document.querySelector('#scanner'),
+            target: scannerElement,
             constraints: {
-                facingMode: "environment"
+                facingMode: { ideal: "environment" },
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            },
+            area: {
+                top: "35%",
+                right: "0%",
+                left: "0%",
+                bottom: "35%"
             }
         },
         decoder : {
             readers : ["ean_reader"]
-        }
+        },
+        locate: true,
+        numOfWorkers: navigator.hardwareConcurrency || 4
     }, function(err) {
         if (!err) {
             Quagga.start();
         }
     });
 
-    document.getElementById("scanner").addEventListener("click", function() {
+    // Tap para disparar y forzar reenfoque
+    scannerElement.addEventListener("click", function() {
         modoDisparo = true;
+
+        Quagga.stop();
+        setTimeout(function() {
+            Quagga.start();
+        }, 200);
     });
 
     Quagga.onDetected(function(result) {
@@ -211,6 +225,7 @@ document.addEventListener("DOMContentLoaded", function() {
 </body>
 </html>
 """
+
 
 
 @app.route("/")
