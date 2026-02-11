@@ -76,19 +76,6 @@ HTML = """
 Cantidad:<br>
 <input type="number" id="cantidad" value="{{ ultima_cantidad }}" min="1"><br><br>
 
-<div style="display:flex; justify-content:flex-end; margin-bottom:8px;">
-    <button type="button" id="focusBtn" style="
-        padding:8px 12px;
-        font-size:13px;
-        border-radius:6px;
-        border:1px solid #ccc;
-        background-color:#f5f5f5;
-        cursor:pointer;
-    ">
-        🔄 Reenfocar
-    </button>
-</div>
-
 <div id="scanner" style="
     width: 100%;
     height: 260px;
@@ -161,8 +148,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const scannerElement = document.getElementById("scanner");
     if (!scannerElement) return;
 
-    // Configuración común reutilizable
-    const quaggaConfig = {
+    Quagga.init({
         inputStream : {
             name : "Live",
             type : "LiveStream",
@@ -175,18 +161,13 @@ document.addEventListener("DOMContentLoaded", function() {
             readers : ["ean_reader"]
         },
         locate: true
-    };
+    }, function(err) {
+        if (!err) {
+            Quagga.start();
+        }
+    });
 
-    function iniciarCamara() {
-        Quagga.init(quaggaConfig, function(err) {
-            if (!err) {
-                Quagga.start();
-            }
-        });
-    }
-
-    iniciarCamara();
-
+    // Solo permitir un escaneo cuando se toca la imagen
     scannerElement.addEventListener("click", function() {
         permitirEscaneo = true;
     });
@@ -199,7 +180,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
         if (!/^\d{13}$/.test(code)) return;
 
-        permitirEscaneo = false;
+        permitirEscaneo = false; // 🔥 evita múltiples lecturas
 
         document.getElementById("codigoInput").value = code;
         document.getElementById("cantidadInput").value =
@@ -207,16 +188,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
         document.getElementById("scanForm").submit();
     });
-
-    // 🔄 BOTÓN REENFOQUE (versión estable)
-    let focusBtn = document.getElementById("focusBtn");
-
-    if (focusBtn) {
-        focusBtn.addEventListener("click", function() {
-            Quagga.stop();
-            iniciarCamara();
-        });
-    }
 
 });
 
