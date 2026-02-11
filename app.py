@@ -96,12 +96,9 @@ Cantidad:<br>
     </button>
 </a>
 
-# <!-- SONIDOS -->
-# <!-- Sonido OK (cling suave) -->
-# <audio id="okSound" src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3"></audio>
-
-# <!-- Sonido ERROR (beep corto) -->
-# <audio id="errorSound" src="https://www.soundjay.com/buttons/sounds/beep-07.mp3"></audio>
+<!-- SONIDOS -->
+<!-- <audio id="okSound" src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3"></audio> -->
+<!-- <audio id="errorSound" src="https://www.soundjay.com/buttons/sounds/beep-07.mp3"></audio> -->
 
 <script>
 
