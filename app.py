@@ -78,7 +78,7 @@ Cantidad:<br>
 
 <div id="scanner" style="
     width: 100%;
-    height: 110px;
+    height: 240px;
     margin: 20px auto;
     border: 3px solid black;
     border-radius: 10px;
@@ -165,24 +165,21 @@ document.addEventListener("DOMContentLoaded", function() {
         inputStream : {
             name : "Live",
             type : "LiveStream",
-            target: scannerElement,
+            target: document.querySelector('#scanner'),
             constraints: {
-                facingMode: { ideal: "environment" },
-                width: { ideal: 1280 },
-                height: { ideal: 720 }
+                facingMode: "environment"
             },
             area: {
-                top: "35%",
+                top: "30%",
                 right: "0%",
                 left: "0%",
-                bottom: "35%"
+                bottom: "30%"
             }
         },
         decoder : {
             readers : ["ean_reader"]
         },
-        locate: true,
-        numOfWorkers: navigator.hardwareConcurrency || 4
+        locate: true
     }, function(err) {
         if (!err) {
             Quagga.start();
