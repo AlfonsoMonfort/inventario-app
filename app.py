@@ -44,7 +44,7 @@ HTML = """
 
 <body style="font-family: Arial; padding: 20px;">
 
-<h2>Inicio Inventario V.3</h2>
+<h2>Inicio Inventario V.4</h2>
 <form method="POST" action="/inicio">
 
     Fecha:<br>
@@ -80,7 +80,7 @@ Cantidad:<br>
 <div id="scanner" style="
     width: 100%;
     max-width: 100%;
-    height: 120px;
+    height: 100px;
     margin: 20px auto;
     border: 3px solid black;
     border-radius: 10px;
