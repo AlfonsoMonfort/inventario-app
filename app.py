@@ -248,19 +248,20 @@ def agregar():
 
     referencia = codigo_a_referencia.get(codigo)
 
-    # 🔴 Si NO encuentra referencia
+    # 🔴 Si NO encuentra referencia → mantener cantidad
     if not referencia:
-        session["ultima_cantidad"] = cantidad  # 👈 guardamos cantidad
+        session["ultima_cantidad"] = cantidad
         return redirect(url_for("home", estado="error"))
 
-    # ✅ Si encuentra referencia
+    # ✅ Si encuentra referencia → sumar y resetear cantidad a 1
     if referencia in inventario["articulos"]:
         inventario["articulos"][referencia] += cantidad
     else:
         inventario["articulos"][referencia] = cantidad
 
     session["inventario"] = inventario
-    session["ultima_cantidad"] = cantidad  # 👈 también la guardamos aquí
+
+    session["ultima_cantidad"] = 1   # 👈 aquí está la clave
 
     return redirect(url_for("home", estado="ok"))
 
