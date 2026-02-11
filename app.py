@@ -38,7 +38,11 @@ HTML = """
 
 <h2>Escanear Código</h2>
 
-<p><b>Toca la imagen para escanear</b></p>
+<button onclick="activarCamara()" style="padding:10px; font-size:16px;">
+    Activar Cámara
+</button>
+
+<p><b>Después toca la imagen para escanear</b></p>
 
 Cantidad:<br>
 <input type="number" id="cantidad" value="1" min="1"><br><br>
@@ -68,33 +72,38 @@ Cantidad:<br>
 
 <script>
 
+let camaraActiva = false;
 let modoDisparo = false;
 
-// Iniciar cámara SIEMPRE para que se vea
-Quagga.init({
-    inputStream : {
-        name : "Live",
-        type : "LiveStream",
-        target: document.querySelector('#scanner'),
-        constraints: {
-            facingMode: "environment"
-        }
-    },
-    decoder : {
-        readers : ["ean_reader"]
-    }
-}, function(err) {
-    if (!err) {
-        Quagga.start();
-    }
-});
+function activarCamara() {
 
-// Cuando tocas la imagen activas el disparo
+    if (camaraActiva) return;
+
+    Quagga.init({
+        inputStream : {
+            name : "Live",
+            type : "LiveStream",
+            target: document.querySelector('#scanner'),
+            constraints: {
+                facingMode: "environment"
+            }
+        },
+        decoder : {
+            readers : ["ean_reader"]
+        }
+    }, function(err) {
+        if (!err) {
+            Quagga.start();
+            camaraActiva = true;
+        }
+    });
+}
+
 document.getElementById("scanner").addEventListener("click", function() {
+    if (!camaraActiva) return;
     modoDisparo = true;
 });
 
-// Solo escanea si el usuario ha tocado antes
 Quagga.onDetected(function(result) {
 
     if (!modoDisparo) return;
@@ -103,7 +112,7 @@ Quagga.onDetected(function(result) {
 
     if (!/^\d{13}$/.test(code)) return;
 
-    modoDisparo = false; // volver a bloquear
+    modoDisparo = false;
 
     document.getElementById("codigoInput").value = code;
     document.getElementById("cantidadInput").value =
@@ -117,6 +126,7 @@ Quagga.onDetected(function(result) {
 </body>
 </html>
 """
+
 
 
 
