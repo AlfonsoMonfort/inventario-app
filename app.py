@@ -5,7 +5,11 @@ import os
 from openpyxl import load_workbook
 from flask import session
 
-
+################## para actualizar ######################
+#git add .
+#git commit -m "mostrar descripcion en pantalla"
+#git push
+#########################################################
 
 app = Flask(__name__)
 
