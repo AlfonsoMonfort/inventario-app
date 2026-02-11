@@ -69,7 +69,14 @@ HTML = """
 Cantidad:<br>
 <input type="number" id="cantidad" value="1" min="1"><br><br>
 
-<div id="scanner" style="width:100%; max-width:400px; border:2px solid black;"></div>
+<div id="scanner" style="
+    width: 260px;
+    height: 180px;
+    margin: auto;
+    border: 3px solid black;
+    border-radius: 10px;
+    overflow: hidden;">
+</div>
 
 <form method="POST" action="/agregar" id="scanForm">
     <input type="hidden" name="codigo" id="codigoInput">
