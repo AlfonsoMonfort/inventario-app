@@ -56,6 +56,16 @@ HTML = """
 
 <h2>Escanear Código</h2>
 
+<!-- MENSAJE VISUAL -->
+<div id="mensajeEstado" style="
+    display:none;
+    padding:12px;
+    margin-bottom:10px;
+    font-weight:bold;
+    border-radius:6px;
+    text-align:center;">
+</div>
+
 Cantidad:<br>
 <input type="number" id="cantidad" value="1" min="1"><br><br>
 
@@ -86,11 +96,48 @@ Cantidad:<br>
     </button>
 </a>
 
+<!-- SONIDOS -->
+<audio id="okSound" src="https://www.soundjay.com/buttons/sounds/button-3.mp3"></audio>
+<audio id="errorSound" src="https://www.soundjay.com/buttons/sounds/button-10.mp3"></audio>
+
 <script>
 
 let modoDisparo = false;
 
 document.addEventListener("DOMContentLoaded", function() {
+
+    // ------------------------
+    // MENSAJE OK / ERROR
+    // ------------------------
+    let estado = "{{ estado }}";
+    let mensaje = document.getElementById("mensajeEstado");
+
+    if (estado === "ok") {
+        mensaje.style.display = "block";
+        mensaje.style.backgroundColor = "#d4edda";
+        mensaje.style.color = "#155724";
+        mensaje.innerHTML = "✅ Artículo añadido";
+        document.getElementById("okSound").play();
+    }
+
+    if (estado === "error") {
+        mensaje.style.display = "block";
+        mensaje.style.backgroundColor = "#f8d7da";
+        mensaje.style.color = "#721c24";
+        mensaje.innerHTML = "❌ Código no encontrado";
+        document.getElementById("errorSound").play();
+    }
+
+    if (estado === "ok" || estado === "error") {
+        setTimeout(function() {
+            mensaje.style.display = "none";
+            window.history.replaceState({}, document.title, "/");
+        }, 1000);
+    }
+
+    // ------------------------
+    // QUAGGA
+    // ------------------------
 
     if (!document.getElementById("scanner")) return;
 
@@ -150,13 +197,18 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
 
+
 @app.route("/")
 def home():
+    estado = request.args.get("estado")
+
     return render_template_string(
         HTML,
         inventario=inventario,
-        referencia_a_descripcion=referencia_a_descripcion
+        referencia_a_descripcion=referencia_a_descripcion,
+        estado=estado
     )
+
 
 
 @app.route("/inicio", methods=["POST"])
@@ -172,18 +224,17 @@ def agregar():
     codigo = request.form["codigo"]
     cantidad = int(request.form["cantidad"])
 
-    # Convertir código de barras a referencia
     referencia = codigo_a_referencia.get(codigo)
 
     if not referencia:
-        return redirect(url_for("home"))  # si no existe, ignorar
+        return redirect(url_for("home", estado="error"))
 
     if referencia in inventario["articulos"]:
         inventario["articulos"][referencia] += cantidad
     else:
         inventario["articulos"][referencia] = cantidad
 
-    return redirect(url_for("home"))
+    return redirect(url_for("home", estado="ok"))
 
 
 @app.route("/excel")
