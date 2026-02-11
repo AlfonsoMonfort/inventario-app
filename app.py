@@ -161,7 +161,8 @@ document.addEventListener("DOMContentLoaded", function() {
     const scannerElement = document.getElementById("scanner");
     if (!scannerElement) return;
 
-    Quagga.init({
+    // Configuración común reutilizable
+    const quaggaConfig = {
         inputStream : {
             name : "Live",
             type : "LiveStream",
@@ -174,13 +175,18 @@ document.addEventListener("DOMContentLoaded", function() {
             readers : ["ean_reader"]
         },
         locate: true
-    }, function(err) {
-        if (!err) {
-            Quagga.start();
-        }
-    });
+    };
 
-    // Solo permitir un escaneo cuando se toca la imagen
+    function iniciarCamara() {
+        Quagga.init(quaggaConfig, function(err) {
+            if (!err) {
+                Quagga.start();
+            }
+        });
+    }
+
+    iniciarCamara();
+
     scannerElement.addEventListener("click", function() {
         permitirEscaneo = true;
     });
@@ -193,7 +199,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
         if (!/^\d{13}$/.test(code)) return;
 
-        permitirEscaneo = false; // 🔥 evita múltiples lecturas
+        permitirEscaneo = false;
 
         document.getElementById("codigoInput").value = code;
         document.getElementById("cantidadInput").value =
@@ -201,13 +207,18 @@ document.addEventListener("DOMContentLoaded", function() {
 
         document.getElementById("scanForm").submit();
     });
-    document.getElementById("focusBtn").addEventListener("click", function() {
-    Quagga.stop();
-    Quagga.start();
-});
+
+    // 🔄 BOTÓN REENFOQUE (versión estable)
+    let focusBtn = document.getElementById("focusBtn");
+
+    if (focusBtn) {
+        focusBtn.addEventListener("click", function() {
+            Quagga.stop();
+            iniciarCamara();
+        });
+    }
 
 });
-
 
 </script>
 
