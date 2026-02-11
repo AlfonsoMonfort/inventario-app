@@ -117,7 +117,6 @@ document.addEventListener("DOMContentLoaded", function() {
         mensaje.style.backgroundColor = "#d4edda";
         mensaje.style.color = "#155724";
         mensaje.innerHTML = "✅ Artículo añadido";
-        document.getElementById("okSound").play();
     }
 
     if (estado === "error") {
@@ -125,7 +124,6 @@ document.addEventListener("DOMContentLoaded", function() {
         mensaje.style.backgroundColor = "#f8d7da";
         mensaje.style.color = "#721c24";
         mensaje.innerHTML = "❌ Código no encontrado";
-        document.getElementById("errorSound").play();
     }
 
     if (estado === "ok" || estado === "error") {
