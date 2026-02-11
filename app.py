@@ -40,7 +40,7 @@ HTML = """
 
 <body style="font-family: Arial; padding: 20px;">
 
-<h2>Inicio Inventario V.2</h2>
+<h2>Inicio Inventario V.3</h2>
 <form method="POST" action="/inicio">
     Almacén:<br>
     <input type="text" name="almacen" required><br><br>
@@ -99,12 +99,12 @@ Cantidad:<br>
 <!-- SONIDOS --> 
 <!-- Sonido OK (cling suave) --> 
 <audio id="okSound" 
-src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3">
-</audio> 
+<audio id="okSound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg">
+</audio>
 
 <!-- Sonido ERROR (beep corto) --> 
 <audio id="errorSound" 
-src="https://www.soundjay.com/buttons/sounds/beep-07.mp3">
+<audio id="errorSound" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg">
 </audio>
 
 <script>
