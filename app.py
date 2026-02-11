@@ -160,33 +160,36 @@ def agregar():
 
 @app.route("/excel")
 def excel():
+    from openpyxl import Workbook
+    from flask import send_file
+
     filename = "inventario.xlsx"
 
     wb = Workbook()
     ws = wb.active
 
-    # Datos fijos arriba
-    ws["A1"] = "Fecha"
-    ws["B1"] = inventario["fecha"]
+    # Cabeceras
+    ws["A1"] = "fecha"
+    ws["B1"] = "almacen"
+    ws["C1"] = "referencia"
+    ws["D1"] = "cantidad"
+    ws["E1"] = "numero_vendedor"
 
-    ws["A2"] = "Almacén"
-    ws["B2"] = inventario["almacen"]
+    fila = 2
 
-    ws["A5"] = "Vendedor"
-    ws["B5"] = inventario["vendedor"]
-
-    # Cabecera tabla
-    ws["A7"] = "Referencia"
-    ws["B7"] = "Cantidad"
-
-    fila = 8
     for codigo, cantidad in inventario["articulos"].items():
-        ws[f"A{fila}"] = codigo
-        ws[f"B{fila}"] = cantidad
+        ws[f"A{fila}"] = inventario["fecha"]
+        ws[f"B{fila}"] = inventario["almacen"]
+        ws[f"C{fila}"] = codigo
+        ws[f"D{fila}"] = cantidad
+        ws[f"E{fila}"] = inventario["vendedor"]
         fila += 1
 
     wb.save(filename)
+
     return send_file(filename, as_attachment=True)
+
+
 
 
 if __name__ == "__main__":
