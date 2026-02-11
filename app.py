@@ -78,9 +78,10 @@ Cantidad:<br>
 <input type="number" id="cantidad" value="1" min="1"><br><br>
 
 <div id="scanner" style="
-    width: 260px;
-    height: 180px;
-    margin: auto;
+    width: 100%;
+    max-width: 100%;
+    height: 120px;
+    margin: 20px auto;
     border: 3px solid black;
     border-radius: 10px;
     overflow: hidden;">
