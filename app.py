@@ -38,7 +38,7 @@ HTML = """
 
 <h2>Escanear Código</h2>
 
-<p><b>Toca la imagen para activar el escaneo</b></p>
+<p><b>Toca la imagen para escanear</b></p>
 
 Cantidad:<br>
 <input type="number" id="cantidad" value="1" min="1"><br><br>
@@ -68,53 +68,48 @@ Cantidad:<br>
 
 <script>
 
-let scannerActivo = false;
+let modoDisparo = false;
 
-function iniciarScanner() {
-
-    if (scannerActivo) return;
-
-    scannerActivo = true;
-
-    Quagga.init({
-        inputStream : {
-            name : "Live",
-            type : "LiveStream",
-            target: document.querySelector('#scanner'),
-            constraints: {
-                facingMode: "environment"
-            }
-        },
-        decoder : {
-            readers : ["ean_reader"]
+// Iniciar cámara SIEMPRE para que se vea
+Quagga.init({
+    inputStream : {
+        name : "Live",
+        type : "LiveStream",
+        target: document.querySelector('#scanner'),
+        constraints: {
+            facingMode: "environment"
         }
-    }, function(err) {
-        if (!err) {
-            Quagga.start();
-        }
-    });
+    },
+    decoder : {
+        readers : ["ean_reader"]
+    }
+}, function(err) {
+    if (!err) {
+        Quagga.start();
+    }
+});
 
-    Quagga.onDetected(function(result) {
-
-        let code = result.codeResult.code;
-
-        if (!/^\d{13}$/.test(code)) return;
-
-        // Parar completamente el scanner
-        Quagga.stop();
-        scannerActivo = false;
-
-        document.getElementById("codigoInput").value = code;
-        document.getElementById("cantidadInput").value =
-            document.getElementById("cantidad").value;
-
-        document.getElementById("scanForm").submit();
-    });
-}
-
-// Solo escanea cuando tocas la imagen
+// Cuando tocas la imagen activas el disparo
 document.getElementById("scanner").addEventListener("click", function() {
-    iniciarScanner();
+    modoDisparo = true;
+});
+
+// Solo escanea si el usuario ha tocado antes
+Quagga.onDetected(function(result) {
+
+    if (!modoDisparo) return;
+
+    let code = result.codeResult.code;
+
+    if (!/^\d{13}$/.test(code)) return;
+
+    modoDisparo = false; // volver a bloquear
+
+    document.getElementById("codigoInput").value = code;
+    document.getElementById("cantidadInput").value =
+        document.getElementById("cantidad").value;
+
+    document.getElementById("scanForm").submit();
 });
 
 </script>
@@ -122,6 +117,7 @@ document.getElementById("scanner").addEventListener("click", function() {
 </body>
 </html>
 """
+
 
 
 
