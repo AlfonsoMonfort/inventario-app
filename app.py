@@ -76,6 +76,19 @@ HTML = """
 Cantidad:<br>
 <input type="number" id="cantidad" value="{{ ultima_cantidad }}" min="1"><br><br>
 
+<div style="display:flex; justify-content:flex-end; margin-bottom:8px;">
+    <button type="button" id="focusBtn" style="
+        padding:8px 12px;
+        font-size:13px;
+        border-radius:6px;
+        border:1px solid #ccc;
+        background-color:#f5f5f5;
+        cursor:pointer;
+    ">
+        🔄 Reenfocar
+    </button>
+</div>
+
 <div id="scanner" style="
     width: 100%;
     height: 260px;
@@ -188,8 +201,13 @@ document.addEventListener("DOMContentLoaded", function() {
 
         document.getElementById("scanForm").submit();
     });
+    document.getElementById("focusBtn").addEventListener("click", function() {
+    Quagga.stop();
+    Quagga.start();
+});
 
 });
+
 
 </script>
 
