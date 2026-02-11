@@ -38,12 +38,12 @@ HTML = """
 
 <h2>Escanear Código</h2>
 
-<p><b>Toca la imagen para escanear</b></p>
+<p><b>Toca la imagen para activar el escaneo</b></p>
 
 Cantidad:<br>
 <input type="number" id="cantidad" value="1" min="1"><br><br>
 
-<div id="scanner" style="width:100%; max-width:400px; border:2px solid #000;"></div>
+<div id="scanner" style="width:100%; max-width:400px; border:2px solid black;"></div>
 
 <form method="POST" action="/agregar" id="scanForm">
     <input type="hidden" name="codigo" id="codigoInput">
@@ -68,49 +68,53 @@ Cantidad:<br>
 
 <script>
 
-let permitirEscaneo = false;
+let scannerActivo = false;
 
-// Inicializar Quagga
-Quagga.init({
-    inputStream : {
-        name : "Live",
-        type : "LiveStream",
-        target: document.querySelector('#scanner'),
-        constraints: {
-            facingMode: "environment"
+function iniciarScanner() {
+
+    if (scannerActivo) return;
+
+    scannerActivo = true;
+
+    Quagga.init({
+        inputStream : {
+            name : "Live",
+            type : "LiveStream",
+            target: document.querySelector('#scanner'),
+            constraints: {
+                facingMode: "environment"
+            }
+        },
+        decoder : {
+            readers : ["ean_reader"]
         }
-    },
-    decoder : {
-        readers : ["ean_reader"]
-    }
-}, function(err) {
-    if (!err) {
-        Quagga.start();
-    }
-});
+    }, function(err) {
+        if (!err) {
+            Quagga.start();
+        }
+    });
 
-// Cuando el usuario toca la pantalla del scanner
+    Quagga.onDetected(function(result) {
+
+        let code = result.codeResult.code;
+
+        if (!/^\d{13}$/.test(code)) return;
+
+        // Parar completamente el scanner
+        Quagga.stop();
+        scannerActivo = false;
+
+        document.getElementById("codigoInput").value = code;
+        document.getElementById("cantidadInput").value =
+            document.getElementById("cantidad").value;
+
+        document.getElementById("scanForm").submit();
+    });
+}
+
+// Solo escanea cuando tocas la imagen
 document.getElementById("scanner").addEventListener("click", function() {
-    permitirEscaneo = true;
-});
-
-// Detectar código
-Quagga.onDetected(function(result) {
-
-    if (!permitirEscaneo) return;
-
-    let code = result.codeResult.code;
-
-    // Validar EAN13
-    if (!/^\d{13}$/.test(code)) return;
-
-    permitirEscaneo = false; // bloquear hasta siguiente toque
-
-    document.getElementById("codigoInput").value = code;
-    document.getElementById("cantidadInput").value =
-        document.getElementById("cantidad").value;
-
-    document.getElementById("scanForm").submit();
+    iniciarScanner();
 });
 
 </script>
@@ -118,6 +122,7 @@ Quagga.onDetected(function(result) {
 </body>
 </html>
 """
+
 
 
 
