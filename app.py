@@ -40,7 +40,7 @@ HTML = """
 
 <body style="font-family: Arial; padding: 20px;">
 
-<h2>Inicio Inventario</h2>
+<h2>Inicio Inventario V.1</h2>
 <form method="POST" action="/inicio">
     Almacén:<br>
     <input type="text" name="almacen" required><br><br>
