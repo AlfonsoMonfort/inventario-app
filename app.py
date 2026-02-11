@@ -46,6 +46,10 @@ HTML = """
 
 <h2>Inicio Inventario V.3</h2>
 <form method="POST" action="/inicio">
+
+    Fecha:<br>
+    <input type="date" name="fecha" value="{{ today }}" required><br><br>
+
     Almacén:<br>
     <input type="text" name="almacen" required><br><br>
 
@@ -107,16 +111,9 @@ Cantidad:<br>
     </button>
 </a>
 
-<!-- SONIDOS --> 
-<!-- Sonido OK (cling suave) --> 
-<audio id="okSound" 
-<audio id="okSound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg">
-</audio>
-
-<!-- Sonido ERROR (beep corto) --> 
-<audio id="errorSound" 
-<audio id="errorSound" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg">
-</audio>
+<!-- SONIDOS -->
+<audio id="okSound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg"></audio>
+<audio id="errorSound" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
 
 <script>
 
@@ -135,7 +132,10 @@ document.addEventListener("DOMContentLoaded", function() {
         mensaje.style.backgroundColor = "#d4edda";
         mensaje.style.color = "#155724";
         mensaje.innerHTML = "✅ Artículo añadido";
-        document.getElementById("okSound").play();
+
+        let okAudio = document.getElementById("okSound");
+        okAudio.volume = 0.3;
+        okAudio.play();
     }
 
     if (estado === "error") {
@@ -143,7 +143,10 @@ document.addEventListener("DOMContentLoaded", function() {
         mensaje.style.backgroundColor = "#f8d7da";
         mensaje.style.color = "#721c24";
         mensaje.innerHTML = "❌ Código no encontrado";
-        document.getElementById("errorSound").play();
+
+        let errorAudio = document.getElementById("errorSound");
+        errorAudio.volume = 0.3;
+        errorAudio.play();
     }
 
     if (estado === "ok" || estado === "error") {
@@ -207,9 +210,12 @@ document.addEventListener("DOMContentLoaded", function() {
 </body>
 </html>
 """
+
+
 @app.route("/")
 def home():
     estado = request.args.get("estado")
+    today = datetime.now().strftime("%Y-%m-%d")
 
     inventario = session.get("inventario", {
         "fecha": "",
@@ -222,14 +228,15 @@ def home():
         HTML,
         inventario=inventario,
         referencia_a_descripcion=referencia_a_descripcion,
-        estado=estado
+        estado=estado,
+        today=today   # 👈 ESTO FALTABA
     )
 
 
 @app.route("/inicio", methods=["POST"])
 def inicio():
     session["inventario"] = {
-        "fecha": datetime.now().strftime("%Y-%m-%d"),
+        "fecha": request.form["fecha"],
         "almacen": request.form["almacen"],
         "vendedor": request.form["vendedor"],
         "articulos": {}
@@ -269,7 +276,11 @@ def excel():
     if not inventario:
         return redirect(url_for("home"))
 
-    filename = "inventario.xlsx"
+    # Limpiar texto para evitar caracteres raros en el nombre
+    almacen = inventario["almacen"].replace(" ", "_")
+    fecha = inventario["fecha"]
+
+    filename = f"inventario.{almacen}.{fecha}.xlsx"
 
     wb = Workbook()
     ws = wb.active
@@ -298,13 +309,6 @@ def excel():
     session.pop("inventario", None)
 
     return send_file(filename, as_attachment=True)
-
-
-
-
-
-
-
 
 
 if __name__ == "__main__":
