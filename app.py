@@ -44,7 +44,7 @@ HTML = """
 
 <body style="font-family: Arial; padding: 20px;">
 
-<h2>Inicio Inventario V.4</h2>
+<h2>Inicio Inventario V.5</h2>
 <form method="POST" action="/inicio">
 
     Fecha:<br>
@@ -165,7 +165,7 @@ document.addEventListener("DOMContentLoaded", function() {
         inputStream : {
             name : "Live",
             type : "LiveStream",
-            target: document.querySelector('#scanner'),
+            target: scannerElement,
             constraints: {
                 facingMode: "environment"
             },
@@ -186,14 +186,9 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 
-    // Tap para disparar y forzar reenfoque
+    // Activar disparo solo al tocar
     scannerElement.addEventListener("click", function() {
         modoDisparo = true;
-
-        Quagga.stop();
-        setTimeout(function() {
-            Quagga.start();
-        }, 200);
     });
 
     Quagga.onDetected(function(result) {
@@ -222,6 +217,7 @@ document.addEventListener("DOMContentLoaded", function() {
 </body>
 </html>
 """
+
 
 
 
