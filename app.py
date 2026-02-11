@@ -154,12 +154,16 @@ document.addEventListener("DOMContentLoaded", function() {
             type : "LiveStream",
             target: scannerElement,
             constraints: {
-                facingMode: "environment"
+                facingMode: "environment",
+                width: { ideal: 1920 },
+                height: { ideal: 1080 }
             }
         },
         decoder : {
-            readers : ["ean_reader"]
+            readers : ["ean_reader"],
+            multiple: false
         },
+        numOfWorkers: navigator.hardwareConcurrency || 4
         locate: true
     }, function(err) {
         if (!err) {
