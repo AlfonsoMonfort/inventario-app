@@ -233,6 +233,9 @@ def inicio():
         "vendedor": request.form["vendedor"],
         "articulos": {}
     }
+
+    session["ultima_cantidad"] = 1  # 👈 FORZAMOS que empiece en 1
+
     return redirect(url_for("home"))
 
 
