@@ -195,15 +195,13 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
 
-
-
-
-
-
-
 @app.route("/")
 def home():
     estado = request.args.get("estado")
+
+    # Si entran sin haber empezado inventario → reset total
+    if not estado and inventario["fecha"] == "":
+        inventario["articulos"] = {}
 
     return render_template_string(
         HTML,
