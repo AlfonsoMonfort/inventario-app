@@ -2,6 +2,7 @@ from flask import Flask, render_template_string, request, redirect, url_for, sen
 from openpyxl import Workbook
 from datetime import datetime
 import os
+from openpyxl import load_workbook
 
 app = Flask(__name__)
 
@@ -11,6 +12,22 @@ inventario = {
     "vendedor": "",
     "articulos": {}
 }
+# Diccionarios de equivalencias
+codigo_a_referencia = {}
+referencia_a_descripcion = {}
+
+def cargar_equivalencias():
+    wb = load_workbook("equivalencias.xlsx")
+    ws = wb.active
+
+    for row in ws.iter_rows(min_row=2, values_only=True):
+        descripcion, codigo_barras, referencia = row
+
+        if codigo_barras and referencia:
+            codigo_a_referencia[str(codigo_barras)] = str(referencia)
+            referencia_a_descripcion[str(referencia)] = descripcion
+
+cargar_equivalencias()
 
 HTML = """
 <!DOCTYPE html>
@@ -53,8 +70,12 @@ Cantidad:<br>
 
 <h3>Artículos Escaneados</h3>
 <ul>
-{% for codigo, cant in inventario["articulos"].items() %}
-    <li>{{codigo}} - {{cant}}</li>
+{% for referencia, cant in inventario["articulos"].items() %}
+    <li>
+        <b>{{ referencia_a_descripcion.get(referencia, "Artículo no encontrado") }}</b><br>
+        Ref: {{ referencia }} — Cantidad: {{ cant }}
+    </li>
+    <br>
 {% endfor %}
 </ul>
 
@@ -69,7 +90,6 @@ Cantidad:<br>
 
 let modoDisparo = false;
 
-// Esperar a que el DOM esté completamente cargado
 document.addEventListener("DOMContentLoaded", function() {
 
     if (!document.getElementById("scanner")) return;
@@ -129,9 +149,15 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
 
+
 @app.route("/")
 def home():
-    return render_template_string(HTML, inventario=inventario)
+    return render_template_string(
+        HTML,
+        inventario=inventario,
+        referencia_a_descripcion=referencia_a_descripcion
+    )
+
 
 @app.route("/inicio", methods=["POST"])
 def inicio():
@@ -146,46 +172,50 @@ def agregar():
     codigo = request.form["codigo"]
     cantidad = int(request.form["cantidad"])
 
-    if codigo in inventario["articulos"]:
-        inventario["articulos"][codigo] += cantidad
+    # Convertir código de barras a referencia
+    referencia = codigo_a_referencia.get(codigo)
+
+    if not referencia:
+        return redirect(url_for("home"))  # si no existe, ignorar
+
+    if referencia in inventario["articulos"]:
+        inventario["articulos"][referencia] += cantidad
     else:
-        inventario["articulos"][codigo] = cantidad
+        inventario["articulos"][referencia] = cantidad
 
     return redirect(url_for("home"))
 
+
 @app.route("/excel")
 def excel():
-    from openpyxl import Workbook
-    from flask import send_file
-    from datetime import datetime
-
-    filename = f"inventario_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+    filename = "inventario.xlsx"
 
     wb = Workbook()
     ws = wb.active
-    ws.title = "Inventario"
 
-    headers = ["fecha", "almacen", "referencia", "cantidad", "numero vendedor"]
-    ws.append(headers)
+    # Cabeceras
+    ws["A1"] = "fecha"
+    ws["B1"] = "almacen"
+    ws["C1"] = "referencia"
+    ws["D1"] = "cantidad"
+    ws["E1"] = "numero_vendedor"
+    ws["F1"] = "descripcion"
 
-    for codigo, cantidad in inventario["articulos"].items():
-        ws.append([
-            inventario["fecha"],
-            inventario["almacen"],
-            codigo,
-            cantidad,
-            inventario["vendedor"]
-        ])
+    fila = 2
+
+    for referencia, cantidad in inventario["articulos"].items():
+        ws[f"A{fila}"] = inventario["fecha"]
+        ws[f"B{fila}"] = inventario["almacen"]
+        ws[f"C{fila}"] = referencia
+        ws[f"D{fila}"] = cantidad
+        ws[f"E{fila}"] = inventario["vendedor"]
+        ws[f"F{fila}"] = referencia_a_descripcion.get(referencia, "")
+        fila += 1
 
     wb.save(filename)
 
-    # 🔥 RESET INVENTARIO DESPUÉS DE GENERAR EXCEL
-    inventario["fecha"] = ""
-    inventario["almacen"] = ""
-    inventario["vendedor"] = ""
-    inventario["articulos"] = {}
-
     return send_file(filename, as_attachment=True)
+
 
 
 
