@@ -3,15 +3,15 @@ from openpyxl import Workbook
 from datetime import datetime
 import os
 from openpyxl import load_workbook
+from flask import session
+
+
 
 app = Flask(__name__)
 
-inventario = {
-    "fecha": "",
-    "almacen": "",
-    "vendedor": "",
-    "articulos": {}
-}
+app.secret_key = "supersecretkey123"
+
+
 # Diccionarios de equivalencias
 codigo_a_referencia = {}
 referencia_a_descripcion = {}
@@ -192,16 +192,16 @@ document.addEventListener("DOMContentLoaded", function() {
 </body>
 </html>
 """
-
-
-
 @app.route("/")
 def home():
     estado = request.args.get("estado")
 
-    # Si entran sin haber empezado inventario → reset total
-    if not estado and inventario["fecha"] == "":
-        inventario["articulos"] = {}
+    inventario = session.get("inventario", {
+        "fecha": "",
+        "almacen": "",
+        "vendedor": "",
+        "articulos": {}
+    })
 
     return render_template_string(
         HTML,
@@ -211,19 +211,26 @@ def home():
     )
 
 
-
 @app.route("/inicio", methods=["POST"])
 def inicio():
-    inventario["fecha"] = datetime.now().strftime("%Y-%m-%d")
-    inventario["almacen"] = request.form["almacen"]
-    inventario["vendedor"] = request.form["vendedor"]
-    inventario["articulos"] = {}
+    session["inventario"] = {
+        "fecha": datetime.now().strftime("%Y-%m-%d"),
+        "almacen": request.form["almacen"],
+        "vendedor": request.form["vendedor"],
+        "articulos": {}
+    }
     return redirect(url_for("home"))
+
 
 @app.route("/agregar", methods=["POST"])
 def agregar():
     codigo = request.form["codigo"]
     cantidad = int(request.form["cantidad"])
+
+    inventario = session.get("inventario")
+
+    if not inventario:
+        return redirect(url_for("home"))
 
     referencia = codigo_a_referencia.get(codigo)
 
@@ -235,11 +242,18 @@ def agregar():
     else:
         inventario["articulos"][referencia] = cantidad
 
+    session["inventario"] = inventario
+
     return redirect(url_for("home", estado="ok"))
 
 
 @app.route("/excel")
 def excel():
+    inventario = session.get("inventario")
+
+    if not inventario:
+        return redirect(url_for("home"))
+
     filename = "inventario.xlsx"
 
     wb = Workbook()
@@ -266,13 +280,10 @@ def excel():
 
     wb.save(filename)
 
-    # 🔥 RESET DEL INVENTARIO
-    inventario["fecha"] = ""
-    inventario["almacen"] = ""
-    inventario["vendedor"] = ""
-    inventario["articulos"] = {}
+    session.pop("inventario", None)
 
     return send_file(filename, as_attachment=True)
+
 
 
 
