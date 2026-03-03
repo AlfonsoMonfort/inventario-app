@@ -57,6 +57,11 @@ app.get("/equivalencias", verificarToken, (req, res) => {
   res.json(JSON.parse(data));
 });
 
+// ===== RUTA RAÍZ =====
+app.get("/", (req, res) => {
+  res.send("Backend funcionando correctamente");
+});
+
 // ===== SERVIR FRONTEND =====
 app.use(express.static("public"));
 
