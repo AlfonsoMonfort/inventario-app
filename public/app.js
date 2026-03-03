@@ -36,7 +36,7 @@ let etiquetasSeleccionadas = [];
 // ----------------------------
 document.addEventListener("DOMContentLoaded", async () => {
 
-  await cargarUsuarios();
+ 
   verificarSesion();
 
   
@@ -67,18 +67,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 });
 
-async function cargarUsuarios() {
-  try {
-    const res = await fetch("usuarios.json");
-    if (!res.ok) throw new Error("No se pudo cargar usuarios");
 
-    usuariosPermitidos = await res.json();
-    console.log("Usuarios cargados:", usuariosPermitidos.length);
-  } catch (e) {
-    alert("Error cargando usuarios");
-    console.error(e);
-  }
-}
 
 async function cargarReferenciasSinCodigo() {
   try {
@@ -932,7 +921,7 @@ async function login() {
   const p = document.getElementById("loginPassword").value.trim();
 
   try {
-    await cargarUsuarios();
+   
 
     const valido = usuariosPermitidos.find(
       x => x.usuario === u && x.password === p
