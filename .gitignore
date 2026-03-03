@@ -1,0 +1,6 @@
+node_modules
+crearHash.js
+*.xlsx
+*.ipynb
+*.pdf
+equivalencias_aprendidas*.json
