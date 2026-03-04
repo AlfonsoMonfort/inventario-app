@@ -1,4 +1,5 @@
-const CACHE_NAME = "inventario-cache-v8";
+const CACHE_NAME = "inventario-cache-v10";
+const DYNAMIC_CACHE = "inventario-dynamic-v1";
 
 const urlsToCache = [
   "./",
@@ -8,10 +9,7 @@ const urlsToCache = [
   "./quagga.min.js",
   "./xlsx.full.min.js",
   "./icon-192.png",
-  "./icon-512.png",
-  "./equivalencias.json",
-  "./referencias_sin_codigo_barras.json"
-  
+  "./icon-512.png"
 ];
 
 // --------------------
@@ -22,8 +20,6 @@ self.addEventListener("install", event => {
     caches.open(CACHE_NAME)
       .then(cache => cache.addAll(urlsToCache))
   );
-
-  // 🔥 Fuerza activación inmediata
   self.skipWaiting();
 });
 
@@ -33,27 +29,47 @@ self.addEventListener("install", event => {
 self.addEventListener("activate", event => {
   event.waitUntil(
     Promise.all([
-      // Borra versiones antiguas
-      caches.keys().then(cacheNames => {
-        return Promise.all(
+      caches.keys().then(cacheNames =>
+        Promise.all(
           cacheNames.map(cache => {
-            if (cache !== CACHE_NAME) {
+            if (cache !== CACHE_NAME && cache !== DYNAMIC_CACHE) {
               return caches.delete(cache);
             }
           })
-        );
-      }),
-      // 🔥 Toma control inmediato
+        )
+      ),
       self.clients.claim()
     ])
   );
 });
 
-
 // --------------------
 // FETCH
 // --------------------
 self.addEventListener("fetch", event => {
+
+  const requestUrl = new URL(event.request.url);
+
+  // 🔥 JSON críticos → Network First
+  if (
+    requestUrl.pathname.includes("equivalencias.json") ||
+    requestUrl.pathname.includes("referencias_sin_codigo_barras.json")
+  ) {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          const responseClone = response.clone();
+          caches.open(DYNAMIC_CACHE).then(cache => {
+            cache.put(event.request, responseClone);
+          });
+          return response;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // 📦 Resto de archivos → Cache First
   event.respondWith(
     caches.match(event.request)
       .then(response => {
