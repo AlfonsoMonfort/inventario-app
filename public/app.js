@@ -101,62 +101,21 @@ async function cargarReferenciasSinCodigo() {
 // CARGAR EXCEL EQUIVALENCIAS
 // ----------------------------
 async function cargarEquivalencias() {
+  const token = localStorage.getItem("token");
 
-  try {
-
-    let datosGuardados = localStorage.getItem("equivalencias");
-
-    if (datosGuardados) {
-      console.log("Cargando equivalencias desde almacenamiento local");
-      let datos = JSON.parse(datosGuardados);
-
-      datos.forEach(item => {
-        const codigoNormalizado = String(item.codigo).replace(/^0+/, "");
-
-        codigo_a_referencia[codigoNormalizado] = item.referencia;
-        referencia_a_descripcion[item.referencia] = item.descripcion;
-        referencia_a_codigo[item.referencia] = codigoNormalizado;
-      });
-
-      console.log(
-        "Total códigos cargados:",
-        Object.keys(codigo_a_referencia).length
-      );
-      return;
+  const res = await fetch("/equivalencias", {
+    headers: {
+      "Authorization": "Bearer " + token
     }
+  });
 
-    console.log("Descargando equivalencias por primera vez");
-
-    const response = await fetch("equivalencias.json");
-
-    if (!response.ok) {
-      throw new Error("No se pudo cargar equivalencias.json");
-    }
-
-    const datos = await response.json();
-
-    console.log("Datos recibidos:", datos);
-
-    // Guardamos TAL CUAL llegaron (pero se normalizan al usar)
-    localStorage.setItem("equivalencias", JSON.stringify(datos));
-
-    datos.forEach(item => {
-
-      const codigoNormalizado = String(item.codigo).replace(/^0+/, "");
-
-      codigo_a_referencia[codigoNormalizado] = item.referencia;
-      referencia_a_descripcion[item.referencia] = item.descripcion;
-      referencia_a_codigo[item.referencia] = codigoNormalizado; // 👈 AÑADIR
-    });
-
-    console.log(
-      "Total códigos cargados:",
-      Object.keys(codigo_a_referencia).length
-    );
-
-  } catch (error) {
-    console.log("Error cargando equivalencias:", error);
+  if (!res.ok) {
+    mostrarMensaje("❌ Sesión expirada", "error");
+    return;
   }
+
+  const data = await res.json();
+  console.log(data);
 }
 
 function cargarEquivalenciasAprendidas() {
@@ -921,21 +880,27 @@ async function login() {
   const p = document.getElementById("loginPassword").value.trim();
 
   try {
-   
+    const res = await fetch("/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        usuario: u,
+        password: p
+      })
+    });
 
-    const valido = usuariosPermitidos.find(
-      x => x.usuario === u && x.password === p
-    );
+    const data = await res.json();
 
-    if (!valido) {
-      mostrarMensaje("❌ Usuario no autorizado", "error");
+    if (!res.ok) {
+      mostrarMensaje("❌ Usuario o contraseña incorrectos", "error");
       return;
     }
 
-    const ahora = Date.now();
-
+    // Guardamos token
+    localStorage.setItem("token", data.token);
     localStorage.setItem("auth_usuario", u);
-    localStorage.setItem("auth_ultimo_ok", ahora.toString());
 
     usuarioLogueado = u;
 
@@ -945,12 +910,8 @@ async function login() {
     mostrarMensaje("✅ Acceso correcto", "ok");
 
   } catch (e) {
-    mostrarMensaje("❌ Sin conexión", "error");
+    mostrarMensaje("❌ Error de conexión con servidor", "error");
   }
-
-  if (u === "PDA") {
-  modoPDA = true;
-}
 }
 
 function verificarSesion() {
