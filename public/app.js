@@ -1216,7 +1216,7 @@ function generarPDFEtiquetasSeleccionadas() {
       centerX,
       refY,
       { align: "center" }
-    );
+    ); 
 
     // ===== GENERAR BARCODE =====
     const canvas = document.createElement("canvas");
