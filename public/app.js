@@ -1295,3 +1295,12 @@ function generarPDFEtiquetasSeleccionadas() {
 
   mostrarMensaje("✅ Etiquetas generadas correctamente", "ok");
 }
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistration().then(reg => {
+    if (reg) {
+      console.log("Buscando SW actualizado...");
+      reg.update(); // fuerza que busque el SW más reciente
+    }
+  });
+}
