@@ -3,10 +3,12 @@
     "usuario": "admin",
     "password": "$2b$10$Ud2R1DIpgqna7eWBG2NdFOxZq.QwiCld3Wcx9XODTsb5sD8Lbt00i"
   },
-  {"usuario":"ROF",
-    "password": "ROF"
+  {
+    "usuario": "ROF",
+    "password": "$2b$10$KDX0bmG1QZJJSRcb/Zk8L.CHztCo8aYbVCTFaqXEuJB.YddO9kIvO"
   },
-  {"usuario":"PDA",
-    "password": "PDA"
+  {
+    "usuario": "PDA",
+    "password": "$2b$10$sZD7kxXR6le2ov5RdwWVIO84USBMIdQFoqC9XQ0zRPg5wtiU5thM6"
   }
 ]
