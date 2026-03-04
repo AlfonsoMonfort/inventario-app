@@ -101,21 +101,67 @@ async function cargarReferenciasSinCodigo() {
 // CARGAR EXCEL EQUIVALENCIAS
 // ----------------------------
 async function cargarEquivalencias() {
-  const token = localStorage.getItem("token");
 
-  const res = await fetch("/equivalencias", {
-    headers: {
-      "Authorization": "Bearer " + token
+  try {
+
+    let datosGuardados = localStorage.getItem("equivalencias");
+
+    if (datosGuardados) {
+      console.log("Cargando equivalencias desde almacenamiento local");
+      let datos = JSON.parse(datosGuardados);
+
+      datos.forEach(item => {
+        const codigoNormalizado = String(item.codigo).replace(/^0+/, "");
+
+        codigo_a_referencia[codigoNormalizado] = item.referencia;
+        referencia_a_descripcion[item.referencia] = item.descripcion;
+        referencia_a_codigo[item.referencia] = codigoNormalizado;
+      });
+
+      console.log(
+        "Total códigos cargados:",
+        Object.keys(codigo_a_referencia).length
+      );
+      return;
     }
-  });
 
-  if (!res.ok) {
-    mostrarMensaje("❌ Sesión expirada", "error");
-    return;
+    console.log("Descargando equivalencias por primera vez");
+
+    const token = localStorage.getItem("token");
+
+    const response = await fetch("/equivalencias", {
+      headers: {
+        "Authorization": "Bearer " + token
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error("No autorizado o error cargando equivalencias");
+    }
+
+    const datos = await response.json();
+
+    console.log("Datos recibidos:", datos);
+
+    localStorage.setItem("equivalencias", JSON.stringify(datos));
+
+    datos.forEach(item => {
+
+      const codigoNormalizado = String(item.codigo).replace(/^0+/, "");
+
+      codigo_a_referencia[codigoNormalizado] = item.referencia;
+      referencia_a_descripcion[item.referencia] = item.descripcion;
+      referencia_a_codigo[item.referencia] = codigoNormalizado;
+    });
+
+    console.log(
+      "Total códigos cargados:",
+      Object.keys(codigo_a_referencia).length
+    );
+
+  } catch (error) {
+    console.log("Error cargando equivalencias:", error);
   }
-
-  const data = await res.json();
-  console.log(data);
 }
 
 function cargarEquivalenciasAprendidas() {
@@ -880,7 +926,8 @@ async function login() {
   const p = document.getElementById("loginPassword").value.trim();
 
   try {
-    const res = await fetch("/login", {
+
+    const response = await fetch("/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -891,16 +938,19 @@ async function login() {
       })
     });
 
-    const data = await res.json();
-
-    if (!res.ok) {
-      mostrarMensaje("❌ Usuario o contraseña incorrectos", "error");
+    if (!response.ok) {
+      mostrarMensaje("❌ Usuario no autorizado", "error");
       return;
     }
 
-    // Guardamos token
+    const data = await response.json();
+
+    // 🔥 Guardamos el token JWT
     localStorage.setItem("token", data.token);
+
+    const ahora = Date.now();
     localStorage.setItem("auth_usuario", u);
+    localStorage.setItem("auth_ultimo_ok", ahora.toString());
 
     usuarioLogueado = u;
 
@@ -909,8 +959,15 @@ async function login() {
 
     mostrarMensaje("✅ Acceso correcto", "ok");
 
+    // 🔥 Cargar equivalencias después del login
+    await cargarEquivalencias();
+
   } catch (e) {
-    mostrarMensaje("❌ Error de conexión con servidor", "error");
+    mostrarMensaje("❌ Sin conexión", "error");
+  }
+
+  if (u === "PDA") {
+    modoPDA = true;
   }
 }
 
