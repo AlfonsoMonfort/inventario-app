@@ -1,5 +1,5 @@
-const CACHE_NAME = "inventario-cache-v10";
-const DYNAMIC_CACHE = "inventario-dynamic-v1";
+const CACHE_NAME = "inventario-cache-v11";
+const DYNAMIC_CACHE = "inventario-dynamic-v2";
 
 const urlsToCache = [
   "./",
