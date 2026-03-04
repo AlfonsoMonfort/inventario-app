@@ -1209,14 +1209,14 @@ function generarPDFEtiquetasSeleccionadas() {
     // ===== REFERENCIA (DEBAJO) =====
     doc.setFont("helvetica", "normal");
 
-    const refY = descripcionY + 2.5;
+    const refY = descripcionY + 4;
 
     doc.text(
       "Ref: " + a.Referencia,
       centerX,
       refY,
       { align: "center" }
-    ); 
+    );
 
     // ===== GENERAR BARCODE =====
     const canvas = document.createElement("canvas");
@@ -1258,7 +1258,7 @@ function generarPDFEtiquetasSeleccionadas() {
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7);
 
-    const codigoTextoY = barcodeY + finalHeight + 1.5;
+    const codigoTextoY = barcodeY + finalHeight + 3;
 
     doc.text(
       codigo,
