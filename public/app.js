@@ -1209,7 +1209,7 @@ function generarPDFEtiquetasSeleccionadas() {
     // ===== REFERENCIA (DEBAJO) =====
     doc.setFont("helvetica", "normal");
 
-    const refY = descripcionY + 4;
+    const refY = descripcionY + 2.5;
 
     doc.text(
       "Ref: " + a.Referencia,
@@ -1258,7 +1258,7 @@ function generarPDFEtiquetasSeleccionadas() {
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7);
 
-    const codigoTextoY = barcodeY + finalHeight + 3;
+    const codigoTextoY = barcodeY + finalHeight + 1.5;
 
     doc.text(
       codigo,
