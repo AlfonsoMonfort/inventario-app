@@ -10,26 +10,36 @@ const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET;
 
 // ===== USUARIOS (HASH REAL MÁS ABAJO) =====
-const usuarios = [
-  {
-    usuario: "admin",
-    password: "$2b$10$Ud2R1DIpgqna7eWBG2NdFOxZq.QwiCld3Wcx9XODTsb5sD8Lbt00i"
-  }
-];
+function obtenerUsuarios() {
+  const data = fs.readFileSync("./usuarios.json");
+  return JSON.parse(data);
+}
 
 // ===== LOGIN =====
 app.post("/login", async (req, res) => {
   const { usuario, password } = req.body;
 
+  const usuarios = obtenerUsuarios();
+
+  console.log("Usuarios cargados:", usuarios);
+  console.log("Usuario recibido:", usuario);
+
   const user = usuarios.find(u => u.usuario === usuario);
-  if (!user) return res.status(401).json({ error: "No autorizado" });
+
+  if (!user) {
+    console.log("Usuario no encontrado");
+    return res.status(401).json({ error: "No autorizado" });
+  }
 
   const ok = await bcrypt.compare(password, user.password);
+
+  console.log("Password correcto:", ok);
+
   if (!ok) return res.status(401).json({ error: "No autorizado" });
 
   const token = jwt.sign(
     { usuario },
-    JWT_SECRET,
+    process.env.JWT_SECRET,
     { expiresIn: "7d" }
   );
 
@@ -53,7 +63,7 @@ function verificarToken(req, res, next) {
 
 // ===== EQUIVALENCIAS PROTEGIDAS =====
 app.get("/equivalencias", verificarToken, (req, res) => {
-  const data = fs.readFileSync("./equivalencias.json");
+  const data = fs.readFileSync("./public/equivalencias.json");
   res.json(JSON.parse(data));
 });
 
