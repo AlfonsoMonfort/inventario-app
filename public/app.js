@@ -56,15 +56,23 @@ document.addEventListener("DOMContentLoaded", async () => {
   registrarServiceWorker();
 
   const cantidadInput = document.getElementById("cantidad");
-  cantidadInput.addEventListener("focus", function () {
-    this.value = "";
-  });
-  const scanner = document.getElementById("scanner");
 
-  scanner.addEventListener("click", () => {
+cantidadInput.addEventListener("focus", () => {
 
-    permitirEscaneo = true; // 📦 escáner normal
-  });
+  if (focoPDAInterval) {
+    clearInterval(focoPDAInterval);
+    focoPDAInterval = null;
+  }
+
+});
+
+cantidadInput.addEventListener("blur", () => {
+
+  if (modoPDA) {
+    activarModoPDA(); // vuelve a activar el foco del escáner
+  }
+
+});
 });
 
 
@@ -267,6 +275,8 @@ function iniciarScanner() {
   });
 }
 
+let focoPDAInterval = null;
+
 function activarModoPDA() {
 
   permitirEscaneo = false;
@@ -274,18 +284,15 @@ function activarModoPDA() {
   const input = document.getElementById("inputPDA");
   input.value = "";
 
-  // 🔒 foco permanente (CLAVE)
-  setInterval(() => {
-    if (document.activeElement !== input) {
-      input.focus();
-    }
-  }, 300);
+  if (!focoPDAInterval) {
+    focoPDAInterval = setInterval(() => {
+      if (document.activeElement !== input) {
+        input.focus();
+      }
+    }, 300);
+  }
 
   mostrarMensaje("📟 Modo PDA activo", "ok");
-
-  input.oninput = () => {
-    // el lector escribe aquí
-  };
 
   input.onkeydown = (e) => {
     if (e.key === "Enter") {
@@ -294,19 +301,7 @@ function activarModoPDA() {
 
       if (!codigo) return;
 
-      if (modoAprendizaje) {
-        codigoPendienteAprender = codigo;
-
-        document.getElementById("codigoAprendidoMostrado").textContent =
-          "Código leído: " + codigo;
-        document.getElementById("codigoAprendidoMostrado").style.display = "block";
-
-        mostrarFormularioAprendizaje();
-        mostrarMensaje("🧠 Código listo para asociar", "ok");
-        return;
-      }
-
-procesarCodigo(codigo);
+      procesarCodigo(codigo);
     }
   };
 }
